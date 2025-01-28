@@ -7,45 +7,59 @@ public class PriorityQueue<T> {
     private Object[] elements;
     private int size;
     private int defaultPriority;
+    private methods method;
 
-    public PriorityQueue(int defaultPriority) {
-        elements = new Object[1];// Масив
-        this.defaultPriority = defaultPriority;
+    public enum methods {
+        LIFO,
+        FIFO
     }
 
+    public PriorityQueue(int defaultPriority, methods getMethods) {
+        elements = new Object[1];// Масив
+        this.defaultPriority = defaultPriority;
+        this.method = getMethods;
+    }
     /**
      * hello
      * @param element test
      * @param priority test
      */
     public void put(T element, int priority) {
-
-        for (int i = 0; i < elements.length; i++) {
-            if (((PriorityQueueNode<T>) elements[i]).getPriority() > ((PriorityQueueNode<T>) elements[i + 1]).getPriority()) {
-                elements[size] = new PriorityQueueNode<>(element, priority);
-                size++;
-
-            }
-
+        if (size == elements.length) {
+            resizeArray();
         }
-//        if (size == elements.length) {
-//            resizeArray();
-//        }
-//        elements[size] = new PriorityQueueNode<>(element, priority);
-//        size++;
+
+        int insertIndex = size;
+
+        // залежить чи <= чи <
+        if (method == methods.LIFO) {
+            for (int i = 0; i < insertIndex; i++) {
+                if (priority <= ((PriorityQueueNode<T>) elements[i]).getPriority()){
+                    insertIndex = i;
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < insertIndex; i++) {
+            if (priority < ((PriorityQueueNode<T>) elements[i]).getPriority()){
+                insertIndex = i;
+                break;
+            }
+        }
+
+        //суне масив в право
+        for (int i = size; i > insertIndex; i--) {
+            elements[i] = elements[i - 1];
+        }
+
+        elements[insertIndex] = new PriorityQueueNode<>(element, priority);
+        size++;
     }
 
     public void put(T element){
-
+        put(element, defaultPriority);
     }
 
-
-    public T get(int index) {
-        if (index >= size) {
-            throw new IndexOutOfBoundsException("Index does not exist: " + index);
-        }
-        return (T) elements[index];
-    }
 
     private void resizeArray() {
         Object[] newArray = new Object[elements.length * 2];
@@ -53,6 +67,10 @@ public class PriorityQueue<T> {
             newArray[i] = elements[i];
         }
         elements = newArray;
+    }
+
+    public void get() {
+
     }
 
     public T lastInFirstOut() {
@@ -85,34 +103,6 @@ public class PriorityQueue<T> {
         return firstElement;
     }
 
-    public void putInIf(T element, int priority) {
-        if (size == elements.length) {
-            resizeArray();
-        }
-
-        PriorityQueueNode<T> newNode = new PriorityQueueNode<>(element, priority);
-
-        elements[size] = newNode;
-        size++;
-
-        sort();
-    }
-
-    private void toSwap(int first, int second) {
-        Object dummy = elements[first];
-        elements[first] = elements[second];
-        elements[second] = dummy;
-    }
-
-    public void sort() {
-        for (int out = size - 1; out >= 1; out--) {
-            for (int in = 0; in < out; in++) {
-                if (((PriorityQueueNode<T>) elements[in]).getPriority() > ((PriorityQueueNode<T>) elements[in + 1]).getPriority()) {
-                    toSwap(in, in + 1);
-                }
-            }
-        }
-    }
 
     public void printer() {
         for (int i = 0; i < size; i++) {

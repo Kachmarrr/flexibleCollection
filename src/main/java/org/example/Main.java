@@ -1,8 +1,5 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Main {
     public static void main(String[] args) {
 
@@ -23,6 +20,8 @@ public class Main {
         qu.get();
         qu.get();
         qu.get();
+
+        System.out.println(qu.firstInFirstOut());
 
         qu.printer();
     }

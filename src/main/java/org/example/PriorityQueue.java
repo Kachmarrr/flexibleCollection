@@ -16,6 +16,15 @@ public class PriorityQueue<T> {
 
     public PriorityQueue(int defaultPriority, String whichMethod) {
         elements = new Object[1];// Масив
+
+        if (defaultPriority <= 0) { // Exception in constructor
+            throw new IllegalArgumentException("Priority are less or equals zero: " + defaultPriority);
+        }
+        if(whichMethod != "LIFO" && whichMethod != "FIFO"){
+            throw new IllegalArgumentException("The method must be LIFO or FIFO, it`s wrong: " + whichMethod);
+
+        }
+
         this.defaultPriority = defaultPriority;
         this.method = methods.valueOf(whichMethod);
     }
@@ -68,9 +77,8 @@ public class PriorityQueue<T> {
 
         if (method == methods.FIFO){
             return firstInFirstOut();
-        } else {
-            return lastInFirstOut();
         }
+            return lastInFirstOut();
     }
 
     private void resizeArray() {
@@ -83,32 +91,29 @@ public class PriorityQueue<T> {
 
     public T lastInFirstOut() {
         if (size == 0) {
-            throw new IllegalStateException("the queue is empty!");
+            throw new IllegalStateException("The queue is empty!");
         }
 
-        T lastElement = (T) elements[size - 1];
-
+        PriorityQueueNode<T> node = (PriorityQueueNode<T>) elements[size - 1];
         elements[size - 1] = null;
         size--;
 
-        return lastElement;
+        return node.value; // Повертаємо лише значення
     }
 
     public T firstInFirstOut() {
         if (size == 0) {
-            throw new IllegalStateException("the queue is empty!");
+            throw new IllegalStateException("The queue is empty!");
         }
 
-        T firstElement = (T) elements[0];
-
+        PriorityQueueNode<T> node = (PriorityQueueNode<T>) elements[0];
         for (int i = 0; i < size - 1; i++) {
             elements[i] = elements[i + 1];
         }
-
         elements[size - 1] = null;
         size--;
 
-        return firstElement;
+        return node.value;
     }
 
     public void printer() {

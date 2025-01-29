@@ -14,15 +14,17 @@ public class PriorityQueue<T> {
         FIFO
     }
 
-    public PriorityQueue(int defaultPriority, methods getMethods) {
+    public PriorityQueue(int defaultPriority, String whichMethod) {
         elements = new Object[1];// Масив
         this.defaultPriority = defaultPriority;
-        this.method = getMethods;
+        this.method = methods.valueOf(whichMethod);
     }
+
     /**
      * hello
-     * @param element test
-     * @param priority test
+     *
+     * @param element "Max"
+     * @param priority 2
      */
     public void put(T element, int priority) {
         if (size == elements.length) {
@@ -34,16 +36,18 @@ public class PriorityQueue<T> {
         // залежить чи <= чи <
         if (method == methods.LIFO) {
             for (int i = 0; i < insertIndex; i++) {
-                if (priority <= ((PriorityQueueNode<T>) elements[i]).getPriority()){
+                if (priority <= ((PriorityQueueNode<T>) elements[i]).getPriority()) {
                     insertIndex = i;
                     break;
                 }
             }
         }
-        for (int i = 0; i < insertIndex; i++) {
-            if (priority < ((PriorityQueueNode<T>) elements[i]).getPriority()){
-                insertIndex = i;
-                break;
+        if (method == methods.FIFO) {
+            for (int i = 0; i < insertIndex; i++) {
+                if (priority < ((PriorityQueueNode<T>) elements[i]).getPriority()) {
+                    insertIndex = i;
+                    break;
+                }
             }
         }
 
@@ -56,10 +60,18 @@ public class PriorityQueue<T> {
         size++;
     }
 
-    public void put(T element){
+    public void put(T element) {
         put(element, defaultPriority);
     }
 
+    public T get() {
+
+        if (method == methods.FIFO){
+            return firstInFirstOut();
+        } else {
+            return lastInFirstOut();
+        }
+    }
 
     private void resizeArray() {
         Object[] newArray = new Object[elements.length * 2];
@@ -67,10 +79,6 @@ public class PriorityQueue<T> {
             newArray[i] = elements[i];
         }
         elements = newArray;
-    }
-
-    public void get() {
-
     }
 
     public T lastInFirstOut() {
@@ -103,7 +111,6 @@ public class PriorityQueue<T> {
         return firstElement;
     }
 
-
     public void printer() {
         for (int i = 0; i < size; i++) {
             System.out.println(elements[i]);
@@ -114,13 +121,12 @@ public class PriorityQueue<T> {
         private T value;
         @Getter
         private int priority;
-        private int defaultPriority;
 
         public PriorityQueueNode(T value, int priority) {
             this.value = value;
             this.priority = priority;
 
-            if (priority <= 0 ){ // Exception in constructor
+            if (priority <= 0) { // Exception in constructor
                 throw new IllegalArgumentException("Priority are less or equals zero: " + priority);
             }
         }

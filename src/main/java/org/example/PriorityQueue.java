@@ -7,53 +7,42 @@ public class PriorityQueue<T> {
     private Object[] elements;
     private int size;
     private int defaultPriority;
-    private methods method;
+    private Methods method;
 
-    public enum methods {
+    public enum Methods {
         LIFO,
         FIFO
     }
 
-    public PriorityQueue(int defaultPriority, String whichMethod) {
+    public PriorityQueue(int defaultPriority, Methods method) {
         elements = new Object[1];// Масив
 
-        if (defaultPriority <= 0) { // Exception in constructor
+        if (defaultPriority <= 0) {
             throw new IllegalArgumentException("Priority are less or equals zero: " + defaultPriority);
-        }
-        if(whichMethod != "LIFO" && whichMethod != "FIFO"){
-            throw new IllegalArgumentException("The method must be LIFO or FIFO, it`s wrong: " + whichMethod);
-
         }
 
         this.defaultPriority = defaultPriority;
-        this.method = methods.valueOf(whichMethod);
+        this.method = method;
     }
 
     /**
      * hello
      *
-     * @param element "Max"
+     * @param element  "Max"
      * @param priority 2
      */
-    public void put(T element, int priority) {
+    public synchronized void put(T element, int priority) {
         if (size == elements.length) {
             resizeArray();
         }
 
         int insertIndex = size;
 
-        // залежить чи <= чи <
-        if (method == methods.LIFO) {
+        if (method == Methods.LIFO || method == Methods.FIFO) {
+            boolean isLIFO = (method == Methods.LIFO);
             for (int i = 0; i < insertIndex; i++) {
-                if (priority <= ((PriorityQueueNode<T>) elements[i]).getPriority()) {
-                    insertIndex = i;
-                    break;
-                }
-            }
-        }
-        if (method == methods.FIFO) {
-            for (int i = 0; i < insertIndex; i++) {
-                if (priority < ((PriorityQueueNode<T>) elements[i]).getPriority()) {
+                if ((isLIFO && priority <= ((PriorityQueueNode<T>) elements[i]).getPriority()) ||
+                        (!isLIFO && priority < ((PriorityQueueNode<T>) elements[i]).getPriority())) {
                     insertIndex = i;
                     break;
                 }
@@ -69,39 +58,11 @@ public class PriorityQueue<T> {
         size++;
     }
 
-    public void put(T element) {
+    public synchronized void put(T element) {
         put(element, defaultPriority);
     }
 
     public T get() {
-
-        if (method == methods.FIFO){
-            return firstInFirstOut();
-        }
-            return lastInFirstOut();
-    }
-
-    private void resizeArray() {
-        Object[] newArray = new Object[elements.length * 2];
-        for (int i = 0; i < elements.length; i++) {
-            newArray[i] = elements[i];
-        }
-        elements = newArray;
-    }
-
-    public T lastInFirstOut() {
-        if (size == 0) {
-            throw new IllegalStateException("The queue is empty!");
-        }
-
-        PriorityQueueNode<T> node = (PriorityQueueNode<T>) elements[size - 1];
-        elements[size - 1] = null;
-        size--;
-
-        return node.value; // Повертаємо лише значення
-    }
-
-    public T firstInFirstOut() {
         if (size == 0) {
             throw new IllegalStateException("The queue is empty!");
         }
@@ -114,6 +75,14 @@ public class PriorityQueue<T> {
         size--;
 
         return node.value;
+    }
+
+    private void resizeArray() {
+        Object[] newArray = new Object[elements.length * 2];
+        for (int i = 0; i < elements.length; i++) {
+            newArray[i] = elements[i];
+        }
+        elements = newArray;
     }
 
     public void printer() {

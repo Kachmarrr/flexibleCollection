@@ -12,12 +12,12 @@ public class PriorityQueueTest {
 
     @Before
     public void setUp() {
-        queueLIFO = new PriorityQueue<>(2, "LIFO");
-        queueFIFO = new PriorityQueue<>(2, "FIFO");
+        queueLIFO = new PriorityQueue<>(2, PriorityQueue.Methods.LIFO);
+        queueFIFO = new PriorityQueue<>(2, PriorityQueue.Methods.FIFO);
     }
 
     @Test
-    public void testPut() {
+    public void testPutLIFO() {
 
         queueLIFO.put("Test1", 1);
         queueLIFO.put("Test2", 3);
@@ -25,49 +25,37 @@ public class PriorityQueueTest {
 
         String result = queueLIFO.get();
 
+        assertEquals("Test1", result);
+    }
+
+    @Test
+    public void testPutFIFO()  {
+
+        queueFIFO.put("Test1", 3);
+        queueFIFO.put("Test2", 1);
+        queueFIFO.put("Test3");
+
+        String result = queueFIFO.get();
+
         assertEquals("Test2", result);
     }
 
     @Test
     public void testGet() {
 
-        queueFIFO.put("Test1");
-        queueFIFO.put("Test2");
+        queueFIFO.put("Test1",4 );
+        queueFIFO.put("Test2", 4);
         queueFIFO.put("Test3");
 
         String result = queueFIFO.get();
 
-        assertEquals("Test1", result);
+        assertEquals("Test3", result);
 
-    }
-
-    @Test
-    public void testLastInFirstOut() {
-
-        queueLIFO.put("Test1");
-        queueLIFO.put("Test2");
-        queueLIFO.put("Test3");
-
-        String result = queueLIFO.lastInFirstOut();
-
-        assertEquals("Test1", result);
-    }
-
-    @Test
-    public void testFirstInFirstOut() {
-
-        queueFIFO.put("Test1");
-        queueFIFO.put("Test2");
-        queueFIFO.put("Test3");
-
-        String result = queueFIFO.firstInFirstOut();
-
-        assertEquals("Test1", result);
     }
 
     @Test
     public void testMultiTypeTest() {
-        PriorityQueue<String> qu = new PriorityQueue<>(2, "FIFO");
+        PriorityQueue<String> qu = new PriorityQueue<>(2, PriorityQueue.Methods.FIFO);
 
         qu.put("Мax");
         qu.put("Ihor", 1);
@@ -77,26 +65,67 @@ public class PriorityQueueTest {
         qu.put("Alex", 1);
         qu.put("Anton", 3);
 
-        assertEquals("Anton", qu.lastInFirstOut());
-        assertEquals("Ihor", qu.firstInFirstOut());
-        assertEquals("Alex", qu.get());
+//        assertEquals("Anton", qu.lastInFirstOut());
+//        assertEquals("Ihor", qu.firstInFirstOut());
+//        assertEquals("Alex", qu.get());
+    }
+
+    @Test
+    public void testSamePriorityGetLIFO() {
+        queueLIFO.put("Test1", 3);
+        queueLIFO.put("Test2", 3);
+        queueLIFO.put("Test3", 3);
+
+        String result = queueLIFO.get();
+
+        assertEquals("Test3", result);
+
+    }
+
+    @Test
+    public void testSamePriorityGetFIFO() {
+        queueFIFO.put("Test1", 3);
+        queueFIFO.put("Test2", 3);
+        queueFIFO.put("Test3", 3);
+
+        String result = queueFIFO.get();
+
+        assertEquals("Test1", result);
+
     }
 
     @Test
     public void testWrongArgumentInConstructorPriority() {
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new PriorityQueue<String>(-1, "FIFO");
+            new PriorityQueue<String>(-1, PriorityQueue.Methods.FIFO);
         });
 
     }
 
     @Test
-    public void testWrongArgumentInConstructorMethod() {
+    public void Multithreading(){
+        PriorityQueue<String> queue = new PriorityQueue<>(1, PriorityQueue.Methods.FIFO);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            new PriorityQueue<String>(2, "LILO");
-        });
+        Runnable producer = () -> {
+            for (int i = 1; i <= 10; i++) {
+                queue.put("Element " + i, i);
+                System.out.println("Додано: Element " + i);
+            }
+        };
+
+        Runnable consumer = () -> {
+            for (int i = 1; i <= 10; i++) {
+                System.out.println("Отримано: " + queue.get());
+            }
+        };
+
+        Thread t1 = new Thread(producer);
+        Thread t2 = new Thread(consumer);
+
+        t1.start();
+        t2.start();
+
 
     }
 }

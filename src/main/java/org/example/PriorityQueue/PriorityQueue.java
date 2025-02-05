@@ -1,4 +1,4 @@
-package org.example;
+package org.example.PriorityQueue;
 
 import lombok.Getter;
 
@@ -38,16 +38,13 @@ public class PriorityQueue<T> {
 
         int insertIndex = size;
 
-        if (method == Methods.LIFO || method == Methods.FIFO) {
-            boolean isLIFO = (method == Methods.LIFO);
             for (int i = 0; i < insertIndex; i++) {
-                if ((isLIFO && priority <= ((PriorityQueueNode<T>) elements[i]).getPriority()) ||
-                        (!isLIFO && priority < ((PriorityQueueNode<T>) elements[i]).getPriority())) {
+                if ((method.equals(Methods.LIFO) && priority <= ((PriorityQueueNode<T>) elements[i]).getPriority()) ||
+                        (method.equals(Methods.FIFO) && priority < ((PriorityQueueNode<T>) elements[i]).getPriority())) {
                     insertIndex = i;
                     break;
                 }
             }
-        }
 
         //суне масив в право
         for (int i = size; i > insertIndex; i--) {
@@ -62,7 +59,7 @@ public class PriorityQueue<T> {
         put(element, defaultPriority);
     }
 
-    public T get() {
+    public synchronized T get() {
         if (size == 0) {
             throw new IllegalStateException("The queue is empty!");
         }
@@ -83,6 +80,10 @@ public class PriorityQueue<T> {
             newArray[i] = elements[i];
         }
         elements = newArray;
+    }
+
+    public int size() {
+        return size;
     }
 
     public void printer() {

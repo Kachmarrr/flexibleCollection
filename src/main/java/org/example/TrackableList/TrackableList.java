@@ -2,64 +2,81 @@ package org.example.TrackableList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class TrackableList<T> extends ArrayList {
+public class TrackableList<T> extends ArrayList<T> {
 
-    private final List<T> list = new ArrayList<>();
+    private final Optional<Predicate<? super T>> addPredicate;
+    private final Optional<Consumer<? super T>> addConsumer;
+    private final Optional<Predicate<? super T>> removePredicate;
+    private final Optional<Consumer<? super T>> removeConsumer;
 
-    //Predicate
-    /**
-     * Отримує значення та умову, якщо умова повертає true,
-     * тоді значення додається в список. rev0.9
-     */
-    public void whenAdd(T value, Predicate<? super T> predicate) {
+    private TrackableList(Predicate<? super T> addPredicate, Consumer<? super T> addConsumer, Predicate<? super T> removePredicate, Consumer<? super T> removeConsumer) {
+        this.addPredicate = Optional.ofNullable(addPredicate);
+        this.addConsumer = Optional.ofNullable(addConsumer);
+        this.removePredicate = Optional.ofNullable(removePredicate);
+        this.removeConsumer = Optional.ofNullable(removeConsumer);
+    }
 
-        if (predicate.test(value)) {
-            list.add(value);
+    @Override
+    public boolean add(T object) {
+
+        if (addPredicate.isPresent() && !addPredicate.get().test(object)) {
+            return false;
         }
+
+        addConsumer.ifPresent(consumer -> consumer.accept(object));
+
+        return super.add(object);
     }
-    /**
-     * Видаляє всі елементи які відповідають умові, можна зробити як з whenAdd,
-     * тобто метод буде видаляти елемент який ми вказали, а не всі що підходять умові.
-     * rev0.9
-     */
-    public void whenRemove(Predicate<? super T> predicate) {
 
-        list.removeIf(predicate);
+    @Override
+    public boolean remove(Object object) {
+        T castedObject = (T) object; // Приводимо до T
 
-    }
-    /**
-     * Видаляє всі елементи, якщо хоча б один відповідає умові.
-     * rev0.9
-     */
-    public void whenRemoveAll(Predicate<? super T> predicate) {
-
-        if (list.stream()
-                .anyMatch(predicate)) { // anyMatch повертає boolean
-            list.clear();
+        if (removePredicate.isPresent() && !removePredicate.get().test(castedObject)) {
+            return false;
         }
-    }
-    //Consumer:
-    /**
-     * Оскільки Consumer нічого не повертає, з ним можна придумати лише метод додавання.
-     */
-    public void whenAdd(T value, Consumer<? super T> consumer) {
-        consumer.accept(value);
-        list.add(value);
+
+        removeConsumer.ifPresent(consumer -> consumer.accept(castedObject));
+
+        return super.remove(object);
     }
 
-    // чому потрібно переписати forEach, якщо ні він працювати не буде.
-    public void forEach(Consumer consumer) {
-        list.forEach(consumer);
-    }
+    public static class TrackableListBuilder<T> {
 
-    public static class TrackableListBuilder {
+        private Predicate<T> predicateForAdd = t -> true;
+        private Predicate<T> predicateForRemove = t -> false;
+        private Consumer<T> consumerForAdd = t -> {
+        };
+        private Consumer<T> consumerForRemove = t -> {
+        };
 
+        public TrackableListBuilder<T> addIf(Predicate<T> predicate) {
+            predicateForAdd = predicateForAdd.and(predicate);
+            return this;
+        }
 
+        public TrackableListBuilder<T> doWhenAdd(Consumer<T> consumer) {
+            consumerForAdd = consumerForAdd.andThen(consumer);
+            return this;
+        }
 
+        public TrackableListBuilder<T> removeIf(Predicate<T> predicate) {
+            predicateForRemove = predicateForRemove.or(predicate);
+            return this;
+        }
+
+        public TrackableListBuilder<T> doWhenRemove(Consumer<T> consumer) {
+            consumerForRemove = consumerForRemove.andThen(consumer);
+            return this;
+        }
+
+        public TrackableList<T> build() {
+            return new TrackableList<>(predicateForAdd, consumerForAdd, predicateForRemove, consumerForRemove);
+        }
     }
 
 }

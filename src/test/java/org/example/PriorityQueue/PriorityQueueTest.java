@@ -1,6 +1,5 @@
-package org.example;
+package org.example.PriorityQueue;
 
-import org.example.PriorityQueue.PriorityQueue;
 import org.junit.Before;
 import org.junit.Test;
 

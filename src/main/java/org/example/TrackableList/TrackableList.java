@@ -13,7 +13,8 @@ public class TrackableList<T> extends ArrayList<T> {
     private final Optional<Predicate<? super T>> removePredicate;
     private final Optional<Consumer<? super T>> removeConsumer;
 
-    private TrackableList(Predicate<? super T> addPredicate, Consumer<? super T> addConsumer, Predicate<? super T> removePredicate, Consumer<? super T> removeConsumer) {
+    private TrackableList(Predicate<? super T> addPredicate, Consumer<? super T> addConsumer,
+                          Predicate<? super T> removePredicate, Consumer<? super T> removeConsumer) {
         this.addPredicate = Optional.ofNullable(addPredicate);
         this.addConsumer = Optional.ofNullable(addConsumer);
         this.removePredicate = Optional.ofNullable(removePredicate);
@@ -47,30 +48,48 @@ public class TrackableList<T> extends ArrayList<T> {
 
     public static class TrackableListBuilder<T> {
 
-        private Predicate<T> predicateForAdd = t -> true;
-        private Predicate<T> predicateForRemove = t -> false;
-        private Consumer<T> consumerForAdd = t -> {
-        };
-        private Consumer<T> consumerForRemove = t -> {
-        };
+        private Predicate<T> predicateForAdd;
+        private Predicate<T> predicateForRemove;
+        private Consumer<T> consumerForAdd;
+        private Consumer<T> consumerForRemove;
 
         public TrackableListBuilder<T> addIf(Predicate<T> predicate) {
-            predicateForAdd = predicateForAdd.and(predicate);
-            return this;
-        }
 
-        public TrackableListBuilder<T> doWhenAdd(Consumer<T> consumer) {
-            consumerForAdd = consumerForAdd.andThen(consumer);
+            if (predicateForAdd == null) {
+                predicateForAdd = predicate;
+            } else {
+                predicateForAdd = predicateForAdd.and(predicate);
+            }
             return this;
         }
 
         public TrackableListBuilder<T> removeIf(Predicate<T> predicate) {
-            predicateForRemove = predicateForRemove.or(predicate);
+
+            if (predicateForRemove == null) {
+                predicateForRemove = predicate;
+            } else {
+                predicateForRemove = predicateForRemove.or(predicate);
+            }
+            return this;
+        }
+
+        public TrackableListBuilder<T> doWhenAdd(Consumer<T> consumer) {
+
+            if (consumerForAdd == null) {
+                consumerForAdd = consumer;
+            } else {
+                consumerForAdd = consumerForAdd.andThen(consumer);
+            }
             return this;
         }
 
         public TrackableListBuilder<T> doWhenRemove(Consumer<T> consumer) {
-            consumerForRemove = consumerForRemove.andThen(consumer);
+
+            if (consumerForRemove == null) {
+                consumerForRemove = consumer;
+            } else {
+                consumerForRemove = consumerForRemove.andThen(consumer);
+            }
             return this;
         }
 
@@ -78,5 +97,4 @@ public class TrackableList<T> extends ArrayList<T> {
             return new TrackableList<>(predicateForAdd, consumerForAdd, predicateForRemove, consumerForRemove);
         }
     }
-
 }

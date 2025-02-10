@@ -91,11 +91,13 @@ public class TrackableListTest {
 
     @Test
     public void removeTest() {
+
         car1.setBalance(2000);
 
         trackableList.add(car1);
-        trackableList.remove(car1);
+        assertEquals(1, trackableList.size());
 
+        trackableList.remove(car1);
         assertEquals(0, trackableList.size());
     }
 
@@ -119,6 +121,65 @@ public class TrackableListTest {
         trackableList.remove(car2);
 
         assertEquals(500, car2.getBalance());
+    }
+
+    @Test
+    public void addMethodIsNull(){
+
+        TrackableList<Car> nullTrackableList = new TrackableList.TrackableListBuilder<Car>()
+                .addIf(null)
+                .build();
+
+        nullTrackableList.add(car1);
+
+        assertTrue(nullTrackableList.contains(car1));
+    }
+
+    @Test
+    public void removeMethodIsNull() {
+
+        TrackableList<Car> nullTrackableList = new TrackableList.TrackableListBuilder<Car>()
+                .removeIf(null)
+                .build();
+
+        nullTrackableList.add(car1);
+        nullTrackableList.remove(car1);
+
+        assertFalse(nullTrackableList.contains(car1));
+    }
+
+    @Test
+    public void multiRemoveIfTest() {
+
+        TrackableList<Car> removeIfTrackableList = new TrackableList.TrackableListBuilder<Car>()
+                .removeIf(car -> car.getBalance() >= 800)
+                .removeIf(car -> car.getSpeed() > 80)
+                .build();
+
+        removeIfTrackableList.add(car1);
+        removeIfTrackableList.add(car2);
+        removeIfTrackableList.add(car3);
+
+        removeIfTrackableList.remove(car1);
+        removeIfTrackableList.remove(car2);
+        removeIfTrackableList.remove(car3);
+
+        assertEquals(car3, removeIfTrackableList.getFirst());
+    }
+
+    @Test
+    public void multiDoWhenRemoveTest() {
+
+        TrackableList<Car> doWhenRemoveNullTrackableList = new TrackableList.TrackableListBuilder<Car>()
+                .doWhenRemove(car -> car.setBalance(500))
+                .doWhenRemove(car -> car.setSpeed(50))
+                .build();
+
+        doWhenRemoveNullTrackableList.add(car1);
+        doWhenRemoveNullTrackableList.remove(car1);
+
+        assertEquals(500, car1.getBalance());
+        assertEquals(50, car1.getSpeed());
     }
 
     @AllArgsConstructor
